@@ -7,6 +7,11 @@
  */
 
 
+use Dotenv\Dotenv;
+use Monolog\Formatter\LineFormatter;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
+
 require_once '../vendor/autoload.php';
 
 
@@ -48,11 +53,86 @@ set_error_handler(
  *  Environment
  * ------------------------------------------------------
  */
-$dotenv = \Dotenv\Dotenv::create(__DIR__);
-$dotenv->overload();
-$dotenv->required([
-    'APP_POSTGRE_HOST',
-    'APP_POSTGRE_USER',
-    'APP_POSTGRE_PASS',
-])->notEmpty();
-$dotenv->required('APP_ENV')->allowedValues([Env::DEVELOPMENT, Env::TESTING, Env::PRODUCTION]);
+require_once 'environment.php';
+
+
+/*
+ * ------------------------------------------------------
+ *  Args
+ * ------------------------------------------------------
+ */
+$namespace = $argv[1];
+$params = [];
+foreach (array_slice($argv, 2) as $param)
+{
+    $param = explode('=', $param);
+    $k = array_shift($param);
+    $v = implode('=', $param); // caso o valor do parâmetro contenha o sinal de '='
+    $params[$k] = $v;
+}
+
+
+/*
+ * ------------------------------------------------------
+ *  Constants
+ * ------------------------------------------------------
+ */
+// script
+define('APP_SCRIPT', $namespace);
+
+
+/*
+ * ------------------------------------------------------
+ *  Logger
+ * ------------------------------------------------------
+ */
+$lineFormatter = new LineFormatter('[%datetime%|%level_name%] %message%' . PHP_EOL, 'H:i:s');
+
+
+$handle = new StreamHandler('php://stdout');
+$handle->setFormatter($lineFormatter);
+
+
+$handleErr = new StreamHandler('php://stderr', Logger::NOTICE, false);
+$handleErr->setFormatter($lineFormatter);
+
+
+$logger = new Logger(APP_SCRIPT);
+$logger->pushHandler($handle);
+$logger->pushHandler($handleErr);
+
+
+/*
+ * ------------------------------------------------------
+ *  Exception Handler
+ * ------------------------------------------------------
+ */
+set_exception_handler(
+    function (Throwable $e) use ($logger) {
+
+        /** @var $e Exception */
+        $message = sprintf('Uncaught Exception %s: "%s" at %s line %s', get_class($e), $e->getMessage(), $e->getFile(), $e->getLine());
+        $message .= "\r\n";
+        $message .= "Trace:";
+        $message .= "\r\n";
+        $message .= $e->getTraceAsString();
+        $context = [];
+
+
+        $logger->critical($message, $context);
+
+
+        exit(255);
+    }
+);
+
+
+/*
+ * ------------------------------------------------------
+ *  Script
+ * ------------------------------------------------------
+ */
+$class = "Holder\\Cron\\{$namespace}\\Main";
+/** @var $boot \Holder\Util\Cron\Boot */
+$boot = new $class($logger);
+$boot->run($params);

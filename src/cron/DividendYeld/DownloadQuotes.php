@@ -6,7 +6,7 @@
  * Time: 19:21
  */
 
-namespace Holder\Cron;
+namespace Holder\Cron\DividendYeld;
 
 
 use Holder\Util\Cron\Handler;

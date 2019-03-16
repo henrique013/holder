@@ -11,5 +11,5 @@ namespace Holder\Util\Cron;
 
 abstract class Boot extends Script
 {
-    public abstract function __invoke(array $params): void;
+    public abstract function run(array $params): void;
 }
