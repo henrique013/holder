@@ -14,10 +14,6 @@ use Holder\Util\Cron\Handler;
 
 class DownloadQuotations extends Handler
 {
-    private const FIELD_DATE = 0;
-    private const FIELD_QUOTATION = 1;
-
-
     protected function _getLabel(): string
     {
         return 'DOWNLOADING QUOTATIONS';
@@ -31,12 +27,17 @@ class DownloadQuotations extends Handler
 
         while ($item = array_shift($json))
         {
-            $date = $item[self::FIELD_DATE];
-            $quotation = $item[self::FIELD_QUOTATION];
+            $time = $item[0];
+            $quotation = $item[1];
 
 
-            $date /= 1000;
-            $date = date('d/m/Y', $date);
+            $time /= 1000;
+            $date = date('d/m/Y', $time);
+            $year = (int)date('Y', $time);
+
+
+            if ($year < 2005)
+                break;
 
 
             $this->p->quotations[$date] = $quotation;
@@ -57,6 +58,9 @@ class DownloadQuotations extends Handler
         $response = $client->request('GET');
         $body = (string)$response->getBody();
         $json = \GuzzleHttp\json_decode($body, true);
+
+
+        $json = array_reverse($json);
 
         return $json;
     }

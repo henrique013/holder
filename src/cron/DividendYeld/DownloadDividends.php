@@ -9,7 +9,10 @@
 namespace Holder\Cron\DividendYeld;
 
 
+use GuzzleHttp\Client;
 use Holder\Util\Cron\Handler;
+use simplehtmldom_1_5\simple_html_dom;
+use Sunra\PhpSimple\HtmlDomParser;
 
 class DownloadDividends extends Handler
 {
@@ -21,6 +24,55 @@ class DownloadDividends extends Handler
 
     protected function _run(): void
     {
+        $html = $this->getHtml();
 
+
+        $trs = $html->find('#resultado tr');
+
+
+        // removing table header
+        unset($trs[0]);
+
+
+        foreach ($trs as $i => $tr)
+        {
+            $date = $tr->children(0)->innertext();
+            $value = $tr->children(1)->innertext();
+            $forHowManyShares = (int)$tr->children(3)->innertext();
+
+
+            $year = (int)explode('/', $date)[2];
+            $value = (float)str_replace(',', '.', $value);
+
+
+            if ($year < 2005)
+                break;
+
+
+            $dividend = $value / $forHowManyShares;
+
+
+            $this->p->dividends[$date] = $dividend;
+        }
+    }
+
+
+    private function getHtml(): simple_html_dom
+    {
+        $config = [
+            'base_uri' => 'http://www.fundamentus.com.br/proventos.php?tipo=2&papel=' . $this->p->stock
+        ];
+
+
+        $client = new Client($config);
+
+
+        $response = $client->request('GET');
+        $body = (string)$response->getBody();
+
+
+        $dom = HtmlDomParser::str_get_html($body);
+
+        return $dom;
     }
 }
