@@ -9,9 +9,8 @@
 namespace Holder\Cron\DividendYeld;
 
 
-use GuzzleHttp\Client;
 use Holder\Util\Cron\Handler;
-use simplehtmldom_1_5\simple_html_dom;
+use Holder\Util\Datetime\Date;
 use Sunra\PhpSimple\HtmlDomParser;
 
 class DownloadDividends extends Handler
@@ -24,10 +23,11 @@ class DownloadDividends extends Handler
 
     protected function _run(): void
     {
-        $html = $this->getHtml();
+        $html = file_get_contents(__DIR__ . "/data/{$this->p->stock}.html");
+        $html = HtmlDomParser::str_get_html($html);
 
 
-        $trs = $html->find('#resultado tr');
+        $trs = $html->find('tr');
 
 
         // removing table header
@@ -36,51 +36,36 @@ class DownloadDividends extends Handler
 
         foreach ($trs as $i => $tr)
         {
-            $date = $tr->children(0)->innertext();
-            $value = $tr->children(1)->innertext();
-            $forHowManyShares = (int)$tr->children(3)->innertext();
+            $stock = trim($tr->children(0)->innertext());
+            $dateEx = trim($tr->children(2)->innertext());
+            $date = trim($tr->children(3)->innertext());
+            $value = trim($tr->children(4)->innertext());
 
 
-            list(, , $year) = array_map('intval', explode('/', $date));
+            if ($stock !== $this->p->stock) continue;
+
+
+            if (!preg_match('/\d\d\/\d\d\/\d\d\d\d/', $date))
+            {
+                $date = $dateEx;
+            }
+
+
+            $year = (int)Date::getDatetimeFromDtBR($date)->format('Y');
             $value = (float)str_replace(',', '.', $value);
 
 
-            if ($year < ($this->p->startYear - 1))
-                break;
+            if (!isset($this->p->dividends[$year]))
+            {
+                $this->p->dividends[$year] = 0;
+            }
 
 
-            $dividend = $value / $forHowManyShares;
-
-
-            if (!isset($this->p->dividends[$date]))
-                $this->p->dividends[$date] = 0;
-
-
-            $this->p->dividends[$date] += $dividend;
+            $this->p->dividends[$year] += $value;
         }
 
 
         // sort from oldest to newest
-        $this->p->dividends = array_reverse($this->p->dividends);
-    }
-
-
-    private function getHtml(): simple_html_dom
-    {
-        $config = [
-            'base_uri' => 'http://www.fundamentus.com.br/proventos.php?tipo=2&papel=' . $this->p->stock
-        ];
-
-
-        $client = new Client($config);
-
-
-        $response = $client->request('GET');
-        $body = (string)$response->getBody();
-
-
-        $dom = HtmlDomParser::str_get_html($body);
-
-        return $dom;
+        $this->p->dividends = array_reverse($this->p->dividends, true);
     }
 }

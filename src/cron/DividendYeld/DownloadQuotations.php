@@ -23,6 +23,7 @@ class DownloadQuotations extends Handler
     protected function _run(): void
     {
         $json = $this->getJson();
+        $quotations = [];
 
 
         while ($item = array_shift($json))
@@ -32,20 +33,34 @@ class DownloadQuotations extends Handler
 
 
             $time /= 1000;
-            $date = date('d/m/Y', $time);
+            $month = (int)date('m', $time);
             $year = (int)date('Y', $time);
 
 
-            if ($year < ($this->p->startYear - 1))
-                break;
+            if (!isset($quotations[$year]))
+            {
+                $quotations[$year]['months'] = [];
+                $quotations[$year]['sum'] = 0;
+                $quotations[$year]['count'] = 0;
+            }
 
 
-            $this->p->quotations[$date] = $quotation;
+            $quotations[$year]['months'][$month] = true;
+            $quotations[$year]['sum'] += $quotation;
+            $quotations[$year]['count']++;
         }
 
 
-        // sort from oldest to newest
-        $this->p->quotations = array_reverse($this->p->quotations);
+        foreach ($quotations as $year => $quotationsYear)
+        {
+            if (count($quotationsYear['months']) !== 12) continue;
+
+
+            $quotation = $quotationsYear['sum'] / $quotationsYear['count'];
+
+
+            $this->p->quotations[$year] = $quotation;
+        }
     }
 
 
@@ -63,9 +78,6 @@ class DownloadQuotations extends Handler
         $body = (string)$response->getBody();
         $json = \GuzzleHttp\json_decode($body, true);
 
-
-        // sort from newest to oldest
-        $json = array_reverse($json);
 
         return $json;
     }
