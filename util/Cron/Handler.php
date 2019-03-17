@@ -22,6 +22,11 @@ abstract class Handler extends Script
         $this->p = $p;
 
 
+        $this->logger->info('================================================================================');
+        $this->logger->info($this->_getLabel());
+        $this->logger->info('================================================================================');
+
+
         if ($content = $this->_getContent())
         {
             $this->_process($content);
@@ -29,6 +34,9 @@ abstract class Handler extends Script
 
         return $this->p;
     }
+
+
+    public abstract function _getLabel(): string;
 
 
     public abstract function _getContent(): array;

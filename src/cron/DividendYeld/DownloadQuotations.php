@@ -11,13 +11,16 @@ namespace Holder\Cron\DividendYeld;
 
 use Holder\Util\Cron\Handler;
 
-class DownloadQuotes extends Handler
+class DownloadQuotations extends Handler
 {
+    public function _getLabel(): string
+    {
+        return 'DOWNLOADING QUOTATIONS';
+    }
+
+
     public function _getContent(): array
     {
-        $this->logger->info(__FUNCTION__);
-
-
         $ret = [];
 
         return $ret;
@@ -25,6 +28,6 @@ class DownloadQuotes extends Handler
 
     public function _process(array $content): void
     {
-        $this->logger->info(__FUNCTION__);
+
     }
 }

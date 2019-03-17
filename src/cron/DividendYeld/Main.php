@@ -28,7 +28,7 @@ class Main extends Boot
 
 
         $pipelineBuilder = (new PipelineBuilder)
-            ->add(new DownloadQuotes($this->logger))
+            ->add(new DownloadQuotations($this->logger))
             ->add(new DownloadDividends($this->logger))
             ->add(new ConsolidateData($this->logger, $conn));
 

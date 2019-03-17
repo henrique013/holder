@@ -13,11 +13,14 @@ use Holder\Util\Cron\Handler;
 
 class DownloadDividends extends Handler
 {
+    public function _getLabel(): string
+    {
+        return 'DOWNLOADING DIVIDENDS';
+    }
+
+
     public function _getContent(): array
     {
-        $this->logger->info(__FUNCTION__);
-
-
         $ret = [];
 
         return $ret;
@@ -25,6 +28,6 @@ class DownloadDividends extends Handler
 
     public function _process(array $content): void
     {
-        $this->logger->info(__FUNCTION__);
+
     }
 }
