@@ -36,12 +36,16 @@ class DownloadQuotations extends Handler
             $year = (int)date('Y', $time);
 
 
-            if ($year < 2005)
+            if ($year < ($this->p->startYear - 1))
                 break;
 
 
             $this->p->quotations[$date] = $quotation;
         }
+
+
+        // sort from oldest to newest
+        $this->p->quotations = array_reverse($this->p->quotations);
     }
 
 
@@ -60,6 +64,7 @@ class DownloadQuotations extends Handler
         $json = \GuzzleHttp\json_decode($body, true);
 
 
+        // sort from newest to oldest
         $json = array_reverse($json);
 
         return $json;

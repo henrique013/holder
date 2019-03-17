@@ -41,19 +41,27 @@ class DownloadDividends extends Handler
             $forHowManyShares = (int)$tr->children(3)->innertext();
 
 
-            $year = (int)explode('/', $date)[2];
+            list(, , $year) = array_map('intval', explode('/', $date));
             $value = (float)str_replace(',', '.', $value);
 
 
-            if ($year < 2005)
+            if ($year < ($this->p->startYear - 1))
                 break;
 
 
             $dividend = $value / $forHowManyShares;
 
 
-            $this->p->dividends[$date] = $dividend;
+            if (!isset($this->p->dividends[$date]))
+                $this->p->dividends[$date] = 0;
+
+
+            $this->p->dividends[$date] += $dividend;
         }
+
+
+        // sort from oldest to newest
+        $this->p->dividends = array_reverse($this->p->dividends);
     }
 
 
