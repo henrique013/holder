@@ -18,13 +18,12 @@ class Main extends Boot
 {
     public function run(array $params): void
     {
-        $this->logger->info(__FUNCTION__);
-
-
         $conn = Helper::connectPostgre();
 
 
         $payload = new stdClass();
+        $payload->quotations = [];
+        $payload->dividends = [];
 
 
         $pipelineBuilder = (new PipelineBuilder)

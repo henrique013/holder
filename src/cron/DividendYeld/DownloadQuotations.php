@@ -13,20 +13,13 @@ use Holder\Util\Cron\Handler;
 
 class DownloadQuotations extends Handler
 {
-    public function _getLabel(): string
+    protected function _getLabel(): string
     {
         return 'DOWNLOADING QUOTATIONS';
     }
 
 
-    public function _getContent(): array
-    {
-        $ret = [];
-
-        return $ret;
-    }
-
-    public function _process(array $content): void
+    protected function _run(): void
     {
 
     }

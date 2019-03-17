@@ -27,20 +27,14 @@ class ConsolidateData extends Handler
         $this->conn = $conn;
     }
 
-    public function _getLabel(): string
+
+    protected function _getLabel(): string
     {
         return 'CONSOLIDATING DATA';
     }
 
 
-    public function _getContent(): array
-    {
-        $ret = [];
-
-        return $ret;
-    }
-
-    public function _process(array $content): void
+    protected function _run(): void
     {
 
     }

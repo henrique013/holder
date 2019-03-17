@@ -27,20 +27,14 @@ abstract class Handler extends Script
         $this->logger->info('================================================================================');
 
 
-        if ($content = $this->_getContent())
-        {
-            $this->_process($content);
-        }
+        $this->_run();
 
         return $this->p;
     }
 
 
-    public abstract function _getLabel(): string;
+    protected abstract function _getLabel(): string;
 
 
-    public abstract function _getContent(): array;
-
-
-    public abstract function _process(array $content): void;
+    protected abstract function _run(): void;
 }
