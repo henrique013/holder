@@ -18,22 +18,32 @@ class Main extends Boot
 {
     public function run(array $params): void
     {
+        $stocks = explode(',', $params['stocks']);
+
+
         $conn = Helper::connectPostgre();
 
 
-        $payload = new stdClass();
-        $payload->quotations = [];
-        $payload->dividends = [];
+        foreach ($stocks as $stock)
+        {
+            $this->logger->info("stock: {$stock}");
 
 
-        $pipelineBuilder = (new PipelineBuilder)
-            ->add(new DownloadQuotations($this->logger))
-            ->add(new DownloadDividends($this->logger))
-            ->add(new ConsolidateData($this->logger, $conn));
+            $payload = new stdClass();
+            $payload->stock = $stock;
+            $payload->quotations = [];
+            $payload->dividends = [];
 
 
-        /** @var $pipeline \League\Pipeline\Pipeline */
-        $pipeline = $pipelineBuilder->build();
-        $pipeline->process($payload);
+            $pipelineBuilder = (new PipelineBuilder)
+                ->add(new DownloadQuotations($this->logger))
+                ->add(new DownloadDividends($this->logger))
+                ->add(new ConsolidateData($this->logger, $conn));
+
+
+            /** @var $pipeline \League\Pipeline\Pipeline */
+            $pipeline = $pipelineBuilder->build();
+            $pipeline->process($payload);
+        }
     }
 }

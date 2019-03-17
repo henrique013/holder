@@ -7,7 +7,6 @@
  */
 
 
-use Dotenv\Dotenv;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
@@ -46,6 +45,14 @@ set_error_handler(
         throw new ErrorException($message, $code, 1, $file, $line);
     }
 );
+
+
+/*
+ * ------------------------------------------------------
+ *  Timer
+ * ------------------------------------------------------
+ */
+PHP_Timer::start();
 
 
 /*
@@ -136,3 +143,11 @@ $class = "Holder\\Cron\\{$namespace}\\Main";
 /** @var $boot \Holder\Util\Cron\Boot */
 $boot = new $class($logger);
 $boot->run($params);
+
+
+/*
+ * ------------------------------------------------------
+ *  Resource Usage
+ * ------------------------------------------------------
+ */
+$logger->info(PHP_Timer::resourceUsage());
