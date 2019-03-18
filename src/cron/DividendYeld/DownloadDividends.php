@@ -23,7 +23,8 @@ class DownloadDividends extends Handler
 
     protected function _run(): void
     {
-        $html = file_get_contents(__DIR__ . "/data/{$this->p->stock}.html");
+        $filename = substr($this->p->stock, 0, 4);
+        $html = file_get_contents(__DIR__ . "/data/{$filename}.html");
         $html = HtmlDomParser::str_get_html($html);
 
 
